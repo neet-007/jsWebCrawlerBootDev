@@ -1,5 +1,26 @@
 const { JSDOM } = require('jsdom');
 
+async function fetchPageHTML(url) {
+	try {
+		const res = await fetch(url);
+
+		if (res.status > 399) {
+			console.log(`fetching error with status ${res.status}`);
+			return
+		}
+
+		const contentTypes = res.headers.get("content-type");
+		if (!contentTypes.includes("text/html")) {
+			console.log("content is not html");
+			return
+		}
+
+		console.log(await res.text())
+	} catch (err) {
+		console.log(`error ${err.message} while fetchin page ${url}`)
+	}
+}
+
 function getUrlsFromHTML(html, baseUrl) {
 	const urlArr = [];
 	const htmlObj = new JSDOM(html);
@@ -33,5 +54,6 @@ function normalizeUrl(url) {
 
 module.exports = {
 	normalizeUrl,
-	getUrlsFromHTML
+	getUrlsFromHTML,
+	fetchPageHTML
 }

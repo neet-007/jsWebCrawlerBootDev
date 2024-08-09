@@ -89,3 +89,19 @@ test("getUrlFromHTML both", () => {
 	expect(actual).toEqual(expected);
 })
 
+test("getUrlFromHTML invalid", () => {
+	const input1 = `
+<html>
+	<body>
+		<a href="invalidj">
+			invalid
+		</a>
+	</body>
+</html>
+
+`;
+	const input2 = "https://example.com"
+	const actual = getUrlsFromHTML(input1, input2);
+	const expected = [];
+	expect(actual).toEqual(expected);
+})
