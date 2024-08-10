@@ -1,6 +1,7 @@
 const { fetchPageHTML } = require("./crawler.js");
+const { printResults } = require("./report.js");
 
-function main() {
+async function main() {
 
 	if (process.argv.length < 3) {
 		console.log("must provide a website url");
@@ -10,7 +11,9 @@ function main() {
 		console.log("you can only provide one url");
 	}
 
-	fetchPageHTML(process.argv[2])
+	const pages = await fetchPageHTML(process.argv[2], process.argv[2], {});
+	printResults(pages)
+
 }
 
 main();

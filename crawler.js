@@ -1,23 +1,48 @@
 const { JSDOM } = require('jsdom');
 
-async function fetchPageHTML(url) {
+async function fetchPageHTML(baseUrl, currentUrl, pages) {
+	const baseUrlObj = new URL(baseUrl);
+	const currentUrlObj = new URL(currentUrl);
+
+	if (baseUrlObj.hostname !== currentUrlObj.hostname) {
+		return pages
+	}
+
+	const NcurrentUrl = normalizeUrl(currentUrl);
+	if (pages[NcurrentUrl] > 0) {
+		pages[NcurrentUrl] += 1;
+		return pages
+	}
+
+	pages[NcurrentUrl] = 1;
 	try {
-		const res = await fetch(url);
+		console.log(`fetching page ${currentUrl}`);
+
+		const res = await fetch(currentUrl);
 
 		if (res.status > 399) {
 			console.log(`fetching error with status ${res.status}`);
-			return
+			return pages
 		}
 
 		const contentTypes = res.headers.get("content-type");
 		if (!contentTypes.includes("text/html")) {
 			console.log("content is not html");
-			return
+			return pages
 		}
 
-		console.log(await res.text())
+		console.log("fethecd");
+
+		const html = await res.text()
+		const urls = getUrlsFromHTML(html, baseUrl);
+		for (let i = 0; i < urls.length; i++) {
+			pages = await fetchPageHTML(baseUrl, urls[i], pages);
+		}
+
+		return pages
+
 	} catch (err) {
-		console.log(`error ${err.message} while fetchin page ${url}`)
+		console.log(`error ${err.message} while fetchin page ${currentUrl}`)
 	}
 }
 
@@ -37,6 +62,7 @@ function getUrlsFromHTML(html, baseUrl) {
 		} catch (err) {
 			console.log(err.message);
 		}
+
 	}
 
 	return urlArr
@@ -46,7 +72,7 @@ function normalizeUrl(url) {
 	const urlObj = new URL(url);
 	const return_val = `${urlObj.hostname}${urlObj.pathname}`;
 
-	if (return_val.endsWith("/")) {
+	if (return_val.length > 0 && return_val.slice(-1) === "/") {
 		return return_val.slice(0, -1)
 	}
 	return return_val
